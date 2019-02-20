@@ -13,12 +13,13 @@ public class Enemy {
     int image_enemy;
     Bitmap image;
     Bitmap resized_enemy;
-    int enemy_gesture;
+    int[]  enemy_gesture;
+    int gesture_index ;
 
 
     private Rect hitBox;
 
-    public Enemy(Context context, int x, int y, boolean image_flag, int gesture) {
+    public Enemy(Context context, int x, int y, boolean image_flag,  int[] gesture) {
 
         if (image_flag == true) {
 
@@ -31,6 +32,7 @@ public class Enemy {
         this.xPosition = x;
         this.yPosition = y;
         this.enemy_gesture = gesture;
+        gesture_index = 0;
 
 
         // @TODO: Resizing the hit box

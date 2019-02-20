@@ -3,6 +3,7 @@ package com.example.magiccatacademy;
 
 import android.content.Context;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -18,7 +19,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -41,8 +45,11 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     // drawing variables
     SurfaceHolder holder;
+
+
     Canvas canvas;
     Paint paintbrush;
+    Paint paintbrush1;
     Bitmap bgImg;
 //    Path mPath;
 
@@ -77,13 +84,18 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     //  gesture code
     String[] gesture_code = new String[]{"line", "up_arrow", "down_arrow"};
+    //List<String> gesture_code = new ArrayList<>()
     int code;
-    int gesture;
+    int[] gesture;
     List<Enemy> enemy_same_code = new ArrayList<Enemy>();
+
+    int[] copy_gesture;
 
     // sound variables
 
     MediaPlayer bg_sound;
+    MediaPlayer life_lost_sound;
+    MediaPlayer crocodial_kill_sound;
 
     public GameEngine(Context context, int w, int h) {
         super(context);
@@ -91,6 +103,7 @@ public class GameEngine extends SurfaceView implements Runnable {
 
         this.holder = this.getHolder();
         this.paintbrush = new Paint();
+        this.paintbrush1 = new Paint();
 
         this.screenWidth = w;
         this.screenHeight = h;
@@ -112,6 +125,8 @@ public class GameEngine extends SurfaceView implements Runnable {
         bgImg = Bitmap.createScaledBitmap(bgImg, this.screenWidth, this.screenHeight, false);
 
         bg_sound = MediaPlayer.create(this.getContext(), R.raw.background_sond);
+        life_lost_sound = MediaPlayer.create(this.getContext(), R.raw.life_lost);
+        crocodial_kill_sound = MediaPlayer.create(this.getContext(), R.raw.crocodial_kill);
         bg_sound.start();
     }
 
@@ -135,11 +150,32 @@ public class GameEngine extends SurfaceView implements Runnable {
         return min + (int) (Math.random() * ((max - min) + 1));
     }
 
+    public static int[] random_gesture(String[] gesture) {
+        Random r = new Random();
+        int no = generate(1, 2);
+        int[] new_no = new int[no];
+        for (int i = 0; i < no; i++) {
+
+            new_no[i] = r.nextInt(gesture.length);
+
+        }
+
+
+        return new_no;
+
+    }
+
     private void spawnEnemy() {
 
-        no = generate(1, 6);
-        Random r = new Random();
-        gesture = r.nextInt(gesture_code.length);
+        no = generate(1, 2);
+
+
+        // Random r = new Random();
+
+//        for (int i = 0; i < no; i++) {
+//            gesture_code[i] = String.valueOf(r.nextInt(gesture_code.length));
+//        }
+//        System.out.println(Arrays.toString(gesture_code));
 
         // gesture = 1;
 
@@ -148,12 +184,12 @@ public class GameEngine extends SurfaceView implements Runnable {
             if (x == 0) {
                 x = this.screenWidth;
                 image_flag = true;
-                gesture = r.nextInt(gesture_code.length);
+                gesture = random_gesture(gesture_code);
 
             } else if (x == this.screenWidth) {
                 x = 0;
                 image_flag = false;
-                gesture = r.nextInt(gesture_code.length);
+                gesture = random_gesture(gesture_code);
             }
 
             y = generate((int) (this.screenHeight * 0.65), this.screenHeight);
@@ -164,6 +200,8 @@ public class GameEngine extends SurfaceView implements Runnable {
             enemy_list.add(enemy);
 
         }
+
+//        enemy_list.add(new Enemy(this.getContext(),x,y,image_flag,new int[] {2,2}));
     }
 
     // ------------------------------
@@ -237,10 +275,13 @@ public class GameEngine extends SurfaceView implements Runnable {
 //            for (Enemy temp_Enemy : enemy_list)
 
                 if (player.getHitbox().intersect(enemy_list.get(i).getHitbox())) {
+
                     lives--;
 //                enemy_list.clear();
 
+
                     enemy_list.remove(i);
+                    life_lost_sound.start();
                     // Log.e(TAG, "Enemy count: " + enemy_list.size());
                     player.setXPosition(this.player.xPosition);
                     player.setYPosition(this.player.yPosition);
@@ -248,74 +289,176 @@ public class GameEngine extends SurfaceView implements Runnable {
 
 
                 }
-
+              //  life_lost_sound.stop();
 
             }
 //spawnEnemy();
 
         } else {
-            spawnEnemy();
+            if(lives == 0) {
+                bg_sound.stop();
+                Intent gameEngine = new Intent(this.getContext(), GameOverScreen.class);
+                this.getContext().startActivity(gameEngine);
+
+            }
+            else{
+                spawnEnemy();
+               //
+               // finish();
+            }
         }
 
     }
 
-    public void kill_enemy() {
-        Log.e(TAG, " enemy list " + enemy_list.size());
+
+    public void tempKill(String gesture) {
+        int[] buffer_Array;
         if (enemy_list.size() != 0) {
-            for (int i = 0; i < enemy_list.size(); i++) {
-                int single_enemy = enemy_list.get(i).enemy_gesture;
+
+            //@TODO: Getting the code
+            for (int i = 0; i < gesture_code.length; i++) {
+                if (gesture_code[i].equals(gesture)) {
+                    code = i;
+                    break;
+                }
+            }
 
 
-                if (single_enemy == code) {
-                    enemy_same_code.add(enemy_list.get(i));
-                    score++;
+            for (Enemy tempEnemy : enemy_list) {
 
-                    Log.e(TAG, "enemy same code " + enemy_same_code.size());
+                if (tempEnemy.enemy_gesture[tempEnemy.gesture_index] == code) {
 
-                } else {
-                    Toast.makeText(this.getContext(), "not removed", Toast.LENGTH_LONG).show();
+                    if (tempEnemy.enemy_gesture.length > 1) {
+
+                        buffer_Array = new int[tempEnemy.enemy_gesture.length - 1];
+
+//                        for (int ii = 0, jj = 0; ii < tempEnemy.enemy_gesture.length; ii++) {
+//
+//                            if (tempEnemy.enemy_gesture[ii] != code) {
+//                                jj++;
+//                                break;
+//                            }
+//                            Log.e(TAG, "II-------------------------------------: " + ii);
+//                            Log.e(TAG, "JJ-------------------------------------: " + jj);
+//                            buffer_Array[jj] = tempEnemy.enemy_gesture[ii];
+//
+//                            Log.e(TAG, "tempKill-------------------------------------: " + Arrays.toString(tempEnemy.enemy_gesture));
+//                            Log.e(TAG, "buffer-------------------------------: " + Arrays.toString(buffer_Array) );
+//                        }
+                        buffer_Array[0] = tempEnemy.enemy_gesture[1];
+                        tempEnemy.enemy_gesture = buffer_Array;
+
+                    } else {
+
+                        tempEnemy.enemy_gesture = null;
+
+                    }
+                }
+            }
+            List<Enemy> bufferEnemy = new ArrayList<Enemy>();
+
+            for (Enemy tempEnemy : enemy_list) {
+
+                if(tempEnemy.enemy_gesture == null || tempEnemy.enemy_gesture.length == 0){
+
+                    bufferEnemy.add(tempEnemy);
+
                 }
 
+            }
+            for(Enemy removeEnemy : bufferEnemy){
+
+                score++;
+                crocodial_kill_sound.start();
+                enemy_list.remove(removeEnemy);
 
             }
 
-            enemy_list.removeAll(enemy_same_code);
-            Log.e(TAG, "after enemy same code " + enemy_same_code.size());
-            Log.e(TAG, "after enemy list " + enemy_list.size());
         } else {
             spawnEnemy();
         }
-    }
-
-    public void gesture_performed(String gesture) {
-
-        if (gesture.equals("Heart")) {
-            if (lives < 5 && lives != 0) {
-                //  code = 0;
-                lives++;
-            } else {
-                Toast.makeText(this.getContext(), "gesture not valid", Toast.LENGTH_SHORT).show();
-
-            }
-        } else if (gesture.equals("down_arrow")) {
-            code = 2;
-            // score++;
-            kill_enemy();
-        } else if (gesture.equals("up_arrow")) {
-            code = 1;
-            // score++;
-            //spawnEnemy();
-            kill_enemy();
-        } else if (gesture.equals("line")) {
-            code = 0;
-
-            // spawnEnemy();
-            kill_enemy();
-            //score++;
-
-        }
 
     }
+
+//    public void kill_enemy() {
+//        Log.e(TAG, " enemy list " + enemy_list.size());
+//        if (enemy_list.size() != 0) {
+//            for (int i = 0; i < enemy_list.size(); i++) {
+//
+//                //  int single_enemy[] = enemy_list.get(i).enemy_gesture;
+//                int single_enemy[] = enemy_list.get(i).enemy_gesture;
+//                if (single_enemy.length != 0) {
+//                    Log.e(TAG, "charmi " + Arrays.toString(single_enemy));
+//
+//                    for (int j = 0; j < single_enemy.length; j++) {
+//
+//                        if (single_enemy[j] == code) {
+//                            Log.e(TAG, "charmi " + single_enemy[j]);
+//
+////                            // shifting elements
+//                            for (int k = j; k < single_enemy.length - 1; k++) {
+//                                single_enemy[k] = single_enemy[k + 1];
+//                            }
+//
+//                        }
+//                        else{
+//
+//                        }
+//                    }
+//                }
+//
+//                //int remove_gesture = enemy_list.get(i).enemy_gesture;
+//
+////                if (single_enemy[] == code) {
+////                    enemy_same_code.add(enemy_list.get(i));
+////                    score++;
+////
+////                    Log.e(TAG, "enemy same code " + enemy_same_code.size());
+////
+////                } else {
+////                    Toast.makeText(this.getContext(), "not removed", Toast.LENGTH_LONG).show();
+////                }
+//
+//
+//            }
+//
+//            enemy_list.removeAll(enemy_same_code);
+//            Log.e(TAG, "after enemy same code " + enemy_same_code.size());
+//            Log.e(TAG, "after enemy list " + enemy_list.size());
+//        } else {
+//            spawnEnemy();
+//        }
+//    }
+
+//    public void gesture_performed(String gesture) {
+//
+//        if (gesture.equals("Heart")) {
+//            if (lives < 5 && lives != 0) {
+//                //  code = 0;
+//                lives++;
+//            } else {
+//                Toast.makeText(this.getContext(), "gesture not valid", Toast.LENGTH_SHORT).show();
+//
+//            }
+//        } else if (gesture.equals("down_arrow")) {
+//            code = 2;
+//            // score++;
+//            kill_enemy();
+//        } else if (gesture.equals("up_arrow")) {
+//            code = 1;
+//            // score++;
+//            //spawnEnemy();
+//            kill_enemy();
+//        } else if (gesture.equals("line")) {
+//            code = 0;
+//
+//            // spawnEnemy();
+//            kill_enemy();
+//            //score++;
+//
+//        }
+//
+//    }
 
 
     public void redrawSprites() {
@@ -364,7 +507,7 @@ public class GameEngine extends SurfaceView implements Runnable {
             for (int i = 0; i < enemy_list.size(); i++) {
                 Enemy hitBox = enemy_list.get(i);
                 Rect enemyHitbox = hitBox.getHitbox();
-                canvas.drawText(" " + hitBox.enemy_gesture, enemyHitbox.left, enemyHitbox.top, paintbrush);
+                canvas.drawText(" " + Arrays.toString(hitBox.enemy_gesture), enemyHitbox.left, enemyHitbox.top, paintbrush);
                 canvas.drawRect(enemyHitbox, paintbrush);
             }
 
@@ -377,7 +520,13 @@ public class GameEngine extends SurfaceView implements Runnable {
             //@TODO: Draw text on screen
             paintbrush.setTextSize(50);
             canvas.drawText("lives left:" + this.lives, 50, 600, paintbrush);
-            canvas.drawText("Score:" + this.score, 50, 500, paintbrush);
+
+
+            paintbrush1.setColor(Color.RED);
+            paintbrush1.setStyle(Paint.Style.STROKE);
+            paintbrush1.setStrokeWidth(5);
+            paintbrush1.setTextSize(100);
+            canvas.drawText("" + this.score, this.screenWidth - 200, 100, paintbrush1);
 
             //  this.holder.unlockCanvasAndPost(canvas);
 

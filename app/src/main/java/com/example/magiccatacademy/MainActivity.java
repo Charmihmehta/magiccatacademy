@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
                     if (pred.score > 1.0) {
                         Toast.makeText(MainActivity.this, pred.name, Toast.LENGTH_LONG).show();
                         Log.e("Gesture", "Gesture detected:" + pred.name);
-                        magicCat.gesture_performed(pred.name);
+                        magicCat.tempKill(pred.name);
 
                     }
 //            }
