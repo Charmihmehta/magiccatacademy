@@ -51,6 +51,8 @@ public class GameEngine extends SurfaceView implements Runnable {
     Paint paintbrush;
     Paint paintbrush1;
     Bitmap bgImg;
+    Bitmap livesImg;
+    Bitmap heartImg;
 //    Path mPath;
 
 //    Paint mPaint;
@@ -123,6 +125,9 @@ public class GameEngine extends SurfaceView implements Runnable {
         //result the image on the phone
 
         bgImg = Bitmap.createScaledBitmap(bgImg, this.screenWidth, this.screenHeight, false);
+
+        livesImg = BitmapFactory.decodeResource(context.getResources(),R.drawable.monkey_head);
+        heartImg = BitmapFactory.decodeResource(context.getResources(),R.drawable.heart);
 
         bg_sound = MediaPlayer.create(this.getContext(), R.raw.background_sond);
         life_lost_sound = MediaPlayer.create(this.getContext(), R.raw.life_lost);
@@ -307,6 +312,37 @@ public class GameEngine extends SurfaceView implements Runnable {
                // finish();
             }
         }
+
+    }
+    public void heartGesture(String gesture){
+        if(gesture.equals("Heart")){
+            if(lives<5 && lives!=0) {
+                lives++;
+            }
+        }
+    }
+
+    public void drawlives(int lives){
+        int x=10;
+        int y =10;
+        for(int i =0 ; i< lives;i++){
+
+            livesImg = Bitmap.createScaledBitmap(livesImg,200,200,false);
+            canvas.drawBitmap(livesImg,x,y,paintbrush);
+
+            x=x+250;
+
+
+
+        }
+        if(lives<5){
+            heartImg = Bitmap.createScaledBitmap(heartImg,200,200,false);
+            canvas.drawBitmap(heartImg,screenWidth/2 ,screenHeight/2,paintbrush);
+
+        }
+
+       //
+
 
     }
 
@@ -510,6 +546,7 @@ public class GameEngine extends SurfaceView implements Runnable {
                 canvas.drawText(" " + Arrays.toString(hitBox.enemy_gesture), enemyHitbox.left, enemyHitbox.top, paintbrush);
                 canvas.drawRect(enemyHitbox, paintbrush);
             }
+            drawlives(lives);
 
             //   Rect enemyHitbox = enemy_list.getHitbox();
 //            canvas.drawRect(enemyHitbox.left, enemyHitbox.top, enemyHitbox.right, enemyHitbox.bottom, paintbrush);

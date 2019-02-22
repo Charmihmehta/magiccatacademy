@@ -74,6 +74,7 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this, pred.name, Toast.LENGTH_LONG).show();
                         Log.e("Gesture", "Gesture detected:" + pred.name);
                         magicCat.tempKill(pred.name);
+                        magicCat.heartGesture(pred.name);
 
                     }
 //            }
