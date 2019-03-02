@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
                     Prediction pred = gesture_array.get(0);
 
                     if (pred.score > 1.0) {
-                        Toast.makeText(MainActivity.this, pred.name, Toast.LENGTH_LONG).show();
+                       // Toast.makeText(MainActivity.this, pred.name, Toast.LENGTH_LONG).show();
                         Log.e("Gesture", "Gesture detected:" + pred.name);
                         magicCat.tempKill(pred.name);
                         magicCat.heartGesture(pred.name);

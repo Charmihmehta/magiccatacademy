@@ -50,6 +50,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     Canvas canvas;
     Paint paintbrush;
     Paint paintbrush1;
+    Paint paintbrush_transp;
     Bitmap bgImg;
     Bitmap livesImg;
     Bitmap heartImg;
@@ -83,9 +84,11 @@ public class GameEngine extends SurfaceView implements Runnable {
     float monkeyY;
     int x = this.screenWidth;
     int y;
+    int speed = 0;
 
     //  gesture code
     String[] gesture_code = new String[]{"line", "up_arrow", "down_arrow"};
+   // String[] gesture_img = new String[]{"line","up-arrow","down-arrow"};
     //List<String> gesture_code = new ArrayList<>()
     int code;
     int[] gesture;
@@ -106,6 +109,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         this.holder = this.getHolder();
         this.paintbrush = new Paint();
         this.paintbrush1 = new Paint();
+        this.paintbrush_transp = new Paint();
 
         this.screenWidth = w;
         this.screenHeight = h;
@@ -132,7 +136,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         bg_sound = MediaPlayer.create(this.getContext(), R.raw.background_sond);
         life_lost_sound = MediaPlayer.create(this.getContext(), R.raw.life_lost);
         crocodial_kill_sound = MediaPlayer.create(this.getContext(), R.raw.crocodial_kill);
-        bg_sound.start();
+
     }
 
 
@@ -157,6 +161,7 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     public static int[] random_gesture(String[] gesture) {
         Random r = new Random();
+
         int no = generate(1, 2);
         int[] new_no = new int[no];
         for (int i = 0; i < no; i++) {
@@ -172,7 +177,13 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     private void spawnEnemy() {
 
-        no = generate(1, 2);
+        if(lives <= 3){
+        no = generate(2, 4);
+        }
+        else
+        {
+            no = generate(1,2);
+        }
 
 
         // Random r = new Random();
@@ -219,6 +230,7 @@ public class GameEngine extends SurfaceView implements Runnable {
             this.redrawSprites();
 
             this.setFPS();
+            bg_sound.start();
         }
     }
 
@@ -299,18 +311,18 @@ public class GameEngine extends SurfaceView implements Runnable {
             }
 //spawnEnemy();
 
-        } else {
-            if(lives == 0) {
-                bg_sound.stop();
-                Intent gameEngine = new Intent(this.getContext(), GameOverScreen.class);
-                this.getContext().startActivity(gameEngine);
+        }
 
-            }
             else{
                 spawnEnemy();
                //
                // finish();
             }
+        if(lives == 0) {
+            bg_sound.stop();
+            Intent gameEngine = new Intent(this.getContext(), GameOverScreen.class);
+            this.getContext().startActivity(gameEngine);
+
         }
 
     }
@@ -349,6 +361,7 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     public void tempKill(String gesture) {
         int[] buffer_Array;
+        Bitmap [] buffer_image;
         if (enemy_list.size() != 0) {
 
             //@TODO: Getting the code
@@ -367,6 +380,7 @@ public class GameEngine extends SurfaceView implements Runnable {
                     if (tempEnemy.enemy_gesture.length > 1) {
 
                         buffer_Array = new int[tempEnemy.enemy_gesture.length - 1];
+                        buffer_image = new Bitmap[tempEnemy.enemy_gesture.length - 1];
 
 //                        for (int ii = 0, jj = 0; ii < tempEnemy.enemy_gesture.length; ii++) {
 //
@@ -384,9 +398,15 @@ public class GameEngine extends SurfaceView implements Runnable {
                         buffer_Array[0] = tempEnemy.enemy_gesture[1];
                         tempEnemy.enemy_gesture = buffer_Array;
 
+                        buffer_image[0] = tempEnemy.gesture_image[1];
+                        tempEnemy.gesture_image = buffer_image;
+
+                        Log.e(TAG, "enemy gesture---------: " + Arrays.toString(tempEnemy.enemy_gesture) + "gesture image--------------" + (tempEnemy.gesture_image.length) );
+//                            Log.e(TAG, "buffer-------------------------------: " + Arrays.toString(buffer_Array) );
                     } else {
 
                         tempEnemy.enemy_gesture = null;
+                        tempEnemy.gesture_image = null;
 
                     }
                 }
@@ -405,10 +425,18 @@ public class GameEngine extends SurfaceView implements Runnable {
             for(Enemy removeEnemy : bufferEnemy){
 
                 score++;
-                crocodial_kill_sound.start();
+
                 enemy_list.remove(removeEnemy);
+                crocodial_kill_sound.start();
+
 
             }
+            if(score >= 10) {
+                bg_sound.stop();
+                Intent gameEngine = new Intent(this.getContext(), WinScreen.class);
+                this.getContext().startActivity(gameEngine);
+            }
+
 
         } else {
             spawnEnemy();
@@ -528,38 +556,49 @@ public class GameEngine extends SurfaceView implements Runnable {
             }
 
             //@TODO: Show the hitboxes on player
-            paintbrush.setColor(Color.BLUE);
-            paintbrush.setStyle(Paint.Style.STROKE);
-            paintbrush.setStrokeWidth(5);
+            paintbrush_transp.setColor(getResources().getColor(android.R.color.transparent));
+            paintbrush_transp.setStyle(Paint.Style.STROKE);
+            paintbrush_transp.setStrokeWidth(5);
             Rect playerHitbox = player.getHitbox();
-            canvas.drawRect(playerHitbox, paintbrush);
+            canvas.drawRect(playerHitbox, paintbrush_transp);
 
             //@TODO: Show the hitboxes on enemy and gestures
-            paintbrush.setColor(Color.RED);
-            paintbrush.setStyle(Paint.Style.STROKE);
-            paintbrush.setStrokeWidth(5);
+            paintbrush_transp.setColor(getResources().getColor(android.R.color.transparent));
+            paintbrush_transp.setStyle(Paint.Style.STROKE);
+            paintbrush_transp.setStrokeWidth(5);
+
+
 
 
             for (int i = 0; i < enemy_list.size(); i++) {
                 Enemy hitBox = enemy_list.get(i);
                 Rect enemyHitbox = hitBox.getHitbox();
-                canvas.drawText(" " + Arrays.toString(hitBox.enemy_gesture), enemyHitbox.left, enemyHitbox.top, paintbrush);
-                canvas.drawRect(enemyHitbox, paintbrush);
+
+
+                if(hitBox.gesture_image.length !=0) {
+                    for (int j = 0; j < hitBox.enemy_gesture.length; j++) {
+                        int x_position = enemyHitbox.left;
+                        if (j != 0) {
+                            x_position = x_position + 80;
+                        }
+
+                        canvas.drawBitmap(hitBox.gesture_image[j], x_position, enemyHitbox.top - 50, paintbrush);
+                    }
+                }
+               // canvas.drawText(" " + Arrays.toString(hitBox.enemy_gesture), enemyHitbox.left, enemyHitbox.top , paintbrush);
+                canvas.drawRect(enemyHitbox, paintbrush_transp);
             }
             drawlives(lives);
 
-            //   Rect enemyHitbox = enemy_list.getHitbox();
-//            canvas.drawRect(enemyHitbox.left, enemyHitbox.top, enemyHitbox.right, enemyHitbox.bottom, paintbrush);
-            //   canvas.drawRect(enemyHitbox, paintbrush);
 
             //@TODO: Draw gesture
 
             //@TODO: Draw text on screen
             paintbrush.setTextSize(50);
-            canvas.drawText("lives left:" + this.lives, 50, 600, paintbrush);
+          //  canvas.drawText("lives left:" + this.lives, 50, 600, paintbrush);
 
 
-            paintbrush1.setColor(Color.RED);
+            paintbrush1.setColor(Color.WHITE);
             paintbrush1.setStyle(Paint.Style.STROKE);
             paintbrush1.setStrokeWidth(5);
             paintbrush1.setTextSize(100);
@@ -579,7 +618,14 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     public void setFPS() {
         try {
-            gameThread.sleep(50);
+
+            if(lives <= 3){
+               speed = 20;
+            }
+            else{
+                speed = 40;
+            }
+            gameThread.sleep(speed);
         } catch (Exception e) {
 
         }

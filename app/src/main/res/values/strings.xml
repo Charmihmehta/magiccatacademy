@@ -8,4 +8,8 @@
         <item>GAME OVER</item>
 
     </string-array>
+    <string-array name="win_game">
+        <item>YOU WIN</item>
+
+    </string-array>
 </resources>
