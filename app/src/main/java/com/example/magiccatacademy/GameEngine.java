@@ -186,14 +186,6 @@ public class GameEngine extends SurfaceView implements Runnable {
         }
 
 
-        // Random r = new Random();
-
-//        for (int i = 0; i < no; i++) {
-//            gesture_code[i] = String.valueOf(r.nextInt(gesture_code.length));
-//        }
-//        System.out.println(Arrays.toString(gesture_code));
-
-        // gesture = 1;
 
         for (int i = 0; i < no; i++) {
 
@@ -431,7 +423,7 @@ public class GameEngine extends SurfaceView implements Runnable {
 
 
             }
-            if(score >= 10) {
+            if(score >= 20) {
                 bg_sound.stop();
                 Intent gameEngine = new Intent(this.getContext(), WinScreen.class);
                 this.getContext().startActivity(gameEngine);
@@ -444,85 +436,8 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     }
 
-//    public void kill_enemy() {
-//        Log.e(TAG, " enemy list " + enemy_list.size());
-//        if (enemy_list.size() != 0) {
-//            for (int i = 0; i < enemy_list.size(); i++) {
-//
-//                //  int single_enemy[] = enemy_list.get(i).enemy_gesture;
-//                int single_enemy[] = enemy_list.get(i).enemy_gesture;
-//                if (single_enemy.length != 0) {
-//                    Log.e(TAG, "charmi " + Arrays.toString(single_enemy));
-//
-//                    for (int j = 0; j < single_enemy.length; j++) {
-//
-//                        if (single_enemy[j] == code) {
-//                            Log.e(TAG, "charmi " + single_enemy[j]);
-//
-////                            // shifting elements
-//                            for (int k = j; k < single_enemy.length - 1; k++) {
-//                                single_enemy[k] = single_enemy[k + 1];
-//                            }
-//
-//                        }
-//                        else{
-//
-//                        }
-//                    }
-//                }
-//
-//                //int remove_gesture = enemy_list.get(i).enemy_gesture;
-//
-////                if (single_enemy[] == code) {
-////                    enemy_same_code.add(enemy_list.get(i));
-////                    score++;
-////
-////                    Log.e(TAG, "enemy same code " + enemy_same_code.size());
-////
-////                } else {
-////                    Toast.makeText(this.getContext(), "not removed", Toast.LENGTH_LONG).show();
-////                }
-//
-//
-//            }
-//
-//            enemy_list.removeAll(enemy_same_code);
-//            Log.e(TAG, "after enemy same code " + enemy_same_code.size());
-//            Log.e(TAG, "after enemy list " + enemy_list.size());
-//        } else {
-//            spawnEnemy();
-//        }
-//    }
 
-//    public void gesture_performed(String gesture) {
-//
-//        if (gesture.equals("Heart")) {
-//            if (lives < 5 && lives != 0) {
-//                //  code = 0;
-//                lives++;
-//            } else {
-//                Toast.makeText(this.getContext(), "gesture not valid", Toast.LENGTH_SHORT).show();
-//
-//            }
-//        } else if (gesture.equals("down_arrow")) {
-//            code = 2;
-//            // score++;
-//            kill_enemy();
-//        } else if (gesture.equals("up_arrow")) {
-//            code = 1;
-//            // score++;
-//            //spawnEnemy();
-//            kill_enemy();
-//        } else if (gesture.equals("line")) {
-//            code = 0;
-//
-//            // spawnEnemy();
-//            kill_enemy();
-//            //score++;
-//
-//        }
-//
-//    }
+
 
 
     public void redrawSprites() {
@@ -631,104 +546,11 @@ public class GameEngine extends SurfaceView implements Runnable {
         }
     }
 
-    // ------------------------------
-    // USER INPUT FUNCTIONS
-    // ------------------------------
-
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//      //  int userAction = event.getActionMasked();
-//        //@TODO: What should happen when person touches the screen?
-//
-//        switch (event.getAction()){
-//
-//            case MotionEvent.ACTION_DOWN:
-//                mPath.moveTo(event.getX(), event.getY());
-//              //  mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-//                mPath.reset();
-//                mPath.moveTo(event.getX(), event.getY());
-//                break;
-//
-//            case MotionEvent.ACTION_MOVE:
-//                mPath.lineTo(event.getX(), event.getY());
-//                invalidate();
-//                break;
-//
-//            case MotionEvent.ACTION_UP:
-//                break;
-//        }
-//        return mDetector.onTouchEvent(event);
-//    }
 
 
 
 
-/*
 
-    @Override
-    public boolean onDown(MotionEvent e) {
-//        spawnEnemy();
-//        score ++;
-//        Toast.makeText(getContext(),"tap 2 detected" ,Toast.LENGTH_SHORT).show();
-        return true;
 
-    }
-
-    @Override
-    public void onShowPress(MotionEvent e) {
-
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-        return false;
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        return false;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent e) {
-
-    }
-
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if(Math.abs(velocityX) < VELOCITY_THRESHOLD
-                && Math.abs(velocityY) < VELOCITY_THRESHOLD){
-            return false;//if the fling is not fast enough then it's just like drag
-        }
-
-        //if velocity in X direction is higher than velocity in Y direction,
-        //then the fling is horizontal, else->vertical
-        if(Math.abs(velocityX) > Math.abs(velocityY)){
-            if(velocityX >= 0){
-
-                spawnEnemy();
-                score++;
-                Toast.makeText(getContext(),"swipe right" ,Toast.LENGTH_SHORT).show();
-            }else{//if velocityX is negative, then it's towards left
-                spawnEnemy();
-                score++;
-                Toast.makeText(getContext(),"swipe left" ,Toast.LENGTH_SHORT).show();
-            }
-        }else{
-            if(velocityY >= 0){
-                spawnEnemy();
-                score++;
-                Toast.makeText(getContext(),"swipe down" ,Toast.LENGTH_SHORT).show();
-            }else{
-                spawnEnemy();
-                score++;
-                Toast.makeText(getContext(),"swipe top" ,Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        return true;
-    }
-*/
 
 }
